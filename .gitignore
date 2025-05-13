@@ -1,0 +1,4 @@
+# Ignore CSV files with "result" in the filename
+*meteorología*.CSV
+*contaminantes*.CSV
+*.tar
