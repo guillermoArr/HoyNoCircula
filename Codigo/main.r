@@ -10,10 +10,14 @@ library(data.table)
 library(ggplot2)
 
 ## Establece el directorio base
-setwd("C:/Users/Memit/OneDrive - INSTITUTO TECNOLOGICO AUTONOMO DE MEXICO/Documentos/ITAM/10 sem/PolPub/HoyNoCircula")
+setwd("C:/Users/marie/Desktop/ITAM/HoyNoCircula")
 ### Establece directorios de fuentes de datos
 DATA.PATH <- paste0(getwd(), "/Datos/final/")
 data <- read.csv(paste0(DATA.PATH, "contaminantes_meteorologia.csv"))
+data <- data %>% 
+  mutate(
+    date = as.Date.character(date, format = "%d/%m/%Y")
+  )
 summary(data)
 ################################################################################
 ####################### OLS - sin controles
@@ -90,7 +94,7 @@ stargazer::stargazer(reg_CO, reg_NO, reg_O3, reg_PM10, reg_PM2.5, reg_SO2,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados de regresiones sin controles ",
+                     title = "Resultados sin controles ",
                      header = FALSE)
 
 stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
@@ -102,7 +106,7 @@ stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados de regresiones con controles 1",
+                     title = "Resultados con controles (1)",
                      header = FALSE)
 
 stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
@@ -114,7 +118,225 @@ stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados de regresiones con controles 2",
+                     title = "Resultados con controles (2)",
+                     header = FALSE)
+
+################################################################################
+###################### Replicar tablas con lags
+data <- data %>% 
+  arrange(date) %>% 
+  mutate(
+    lag.1 = lag(activacion_doble_no_circula, n = 1, default = 0),
+    lag.2 = lag(activacion_doble_no_circula, n = 2, default = 0)
+  )
+############################################################
+####                   1 lag hacia adelante        #########
+
+
+####################### OLS - sin controles 
+# CO
+CO_lag1 <- lm(CO_mean ~ lag.1, data = data)
+# NO
+NO_lag1 <- lm(NO_mean ~ lag.1, data = data)
+# O3
+O3_lag1 <- lm(O3_mean ~ lag.1, data = data)
+#PM10
+PM10_lag1 <- lm(PM10_mean ~ lag.1, data = data)
+#PM2.5
+PM2.5_lag1 <- lm(PM2.5_mean ~ lag.1, data = data)
+# SO2
+SO2_lag1 <- lm(SO2_mean ~ lag.1, data = data)
+
+####################### Summaries
+# CO
+summary(CO_lag1) 
+# NO
+summary(NO_lag1) 
+# O3
+summary(O3_lag1)
+#PM10
+summary(PM10_lag1)
+#PM2.5
+summary(PM2.5_lag1)
+# SO2
+summary(SO2_lag1)
+
+####################### OLS - controles meteorologicos
+# CO
+CO_cont_l1 <- lm(CO_mean ~ lag.1 +
+                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+# NO
+NO_cont_l1 <- lm(NO_mean ~ lag.1 +
+                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+# O3
+O3_cont_l1 <- lm(O3_mean ~ lag.1 +
+                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+#PM10
+PM10_cont_l1 <- lm(PM10_mean ~ lag.1 +
+                      RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+#PM2.5
+PM2.5_cont_l1 <- lm(PM2.5_mean ~ lag.1 +
+                       RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+# SO2
+SO2_cont_l1 <- lm(SO2_mean ~ lag.1 +
+                     RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+
+####################### Summaries
+# CO
+summary(CO_cont_l1) 
+# NO
+summary(NO_cont_l1) 
+# O3
+summary(O3_cont_l1)
+#PM10
+summary(PM10_cont_l1)
+#PM2.5
+summary(PM2.5_cont_l1)
+# SO2
+summary(SO2_cont_l1)
+
+################################################################################
+####################### GENERACION DE TABLAS
+
+stargazer::stargazer(CO_lag1, NO_lag1, O3_lag1, PM10_lag1, PM2.5_lag1, SO2_lag1,
+                     type = "text",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     covariate.labels = c("DHNC", "Cte"),
+                     column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     title = "Resultados sin controles 1 día después",
+                     header = FALSE)
+
+stargazer::stargazer(CO_cont_l1, NO_cont_l1, O3_cont_l1,
+                     type = "text",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
+                     column.labels = c("CO", "NO", "O3"),
+                     dep.var.caption = "Contaminantes",
+                     title = "Resultados con controles 1 día después (1)",
+                     header = FALSE)
+
+stargazer::stargazer(PM10_cont_l1, PM2.5_cont_l1, SO2_cont_l1,
+                     type = "text",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
+                     column.labels = c("PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     title = "Resultados con controles 1 día despues (2)",
+                     header = FALSE)
+
+############################################################
+####                   2 lag hacia adelante        #########
+
+
+####################### OLS - sin controles 
+# CO
+CO_lag2 <- lm(CO_mean ~ lag.2, data = data)
+# NO
+NO_lag2 <- lm(NO_mean ~ lag.2, data = data)
+# O3
+O3_lag2 <- lm(O3_mean ~ lag.2, data = data)
+#PM10
+PM10_lag2 <- lm(PM10_mean ~ lag.2, data = data)
+#PM2.5
+PM2.5_lag2 <- lm(PM2.5_mean ~ lag.2, data = data)
+# SO2
+SO2_lag2 <- lm(SO2_mean ~ lag.2, data = data)
+
+####################### Summaries
+# CO
+summary(CO_lag2) 
+# NO
+summary(NO_lag2) 
+# O3
+summary(O3_lag2)
+#PM10
+summary(PM10_lag2)
+#PM2.5
+summary(PM2.5_lag2)
+# SO2
+summary(SO2_lag2)
+
+####################### OLS - controles meteorologicos
+# CO
+CO_cont_l2 <- lm(CO_mean ~ lag.2 +
+                   RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+# NO
+NO_cont_l2 <- lm(NO_mean ~ lag.2 +
+                   RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+# O3
+O3_cont_l2 <- lm(O3_mean ~ lag.2 +
+                   RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+#PM10
+PM10_cont_l2 <- lm(PM10_mean ~ lag.2 +
+                     RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+#PM2.5
+PM2.5_cont_l2 <- lm(PM2.5_mean ~ lag.2 +
+                      RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+# SO2
+SO2_cont_l2 <- lm(SO2_mean ~ lag.2 +
+                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+
+####################### Summaries
+# CO
+summary(CO_cont_l2) 
+# NO
+summary(NO_cont_l2) 
+# O3
+summary(O3_cont_l2)
+#PM10
+summary(PM10_cont_l2)
+#PM2.5
+summary(PM2.5_cont_l2)
+# SO2
+summary(SO2_cont_l2)
+
+################################################################################
+####################### GENERACION DE TABLAS
+
+stargazer::stargazer(CO_lag2, NO_lag2, O3_lag2, PM10_lag2, PM2.5_lag2, SO2_lag2,
+                     type = "text",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     covariate.labels = c("DHNC", "Cte"),
+                     column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     title = "Resultados sin controles 2 días después",
+                     header = FALSE)
+
+stargazer::stargazer(CO_cont_l2, NO_cont_l2, O3_cont_l2,
+                     type = "text",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
+                     column.labels = c("CO", "NO", "O3"),
+                     dep.var.caption = "Contaminantes",
+                     title = "Resultados con controles 2 días después (1)",
+                     header = FALSE)
+
+stargazer::stargazer(PM10_cont_l2, PM2.5_cont_l2, SO2_cont_l2,
+                     type = "text",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
+                     column.labels = c("PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     title = "Resultados con controles 2 días despues (2)",
                      header = FALSE)
 
 
