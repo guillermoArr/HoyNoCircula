@@ -13,7 +13,7 @@ library(ggplot2)
 setwd("C:/Users/marie/Desktop/ITAM/HoyNoCircula")
 ### Establece directorios de fuentes de datos
 DATA.PATH <- paste0(getwd(), "/Datos/final/")
-data <- read.csv(paste0(DATA.PATH, "contaminantes_meteorologia.csv"))
+data <- read.csv(paste0(DATA.PATH, "contaminantes_meteorologia_max.csv"))
 data <- data %>% 
   mutate(
     date = as.Date.character(date, format = "%d/%m/%Y")
@@ -22,17 +22,17 @@ summary(data)
 ################################################################################
 ####################### OLS - sin controles
 # CO
-reg_CO <- lm(CO_mean ~ activacion_doble_no_circula, data = data)
+reg_CO <- lm(CO_max ~ activacion_doble_no_circula, data = data)
 # NO
-reg_NO <- lm(NO_mean ~ activacion_doble_no_circula, data = data)
+reg_NO <- lm(NO_max ~ activacion_doble_no_circula, data = data)
 # O3
-reg_O3 <- lm(O3_mean ~ activacion_doble_no_circula, data = data)
+reg_O3 <- lm(O3_max ~ activacion_doble_no_circula, data = data)
 #PM10
-reg_PM10 <- lm(PM10_mean ~ activacion_doble_no_circula, data = data)
+reg_PM10 <- lm(PM10_max ~ activacion_doble_no_circula, data = data)
 #PM2.5
-reg_PM2.5 <- lm(PM2.5_mean ~ activacion_doble_no_circula, data = data)
+reg_PM2.5 <- lm(PM2.5_max ~ activacion_doble_no_circula, data = data)
 # SO2
-reg_SO2 <- lm(SO2_mean ~ activacion_doble_no_circula, data = data)
+reg_SO2 <- lm(SO2_max ~ activacion_doble_no_circula, data = data)
 
 ####################### Summaries
 # CO
@@ -50,23 +50,23 @@ summary(reg_SO2)
 
 ####################### OLS - controles meteorologicos
 # CO
-reg_CO_cont <- lm(CO_mean ~ activacion_doble_no_circula +
-               RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+reg_CO_cont <- lm(CO_max ~ activacion_doble_no_circula +
+               RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # NO
-reg_NO_cont <- lm(NO_mean ~ activacion_doble_no_circula +
-               RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+reg_NO_cont <- lm(NO_max ~ activacion_doble_no_circula +
+               RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # O3
-reg_O3_cont <- lm(O3_mean ~ activacion_doble_no_circula +
-               RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+reg_O3_cont <- lm(O3_max ~ activacion_doble_no_circula +
+               RH_max + TMP_max + WDR_max + WSP_max, data = data)
 #PM10
-reg_PM10_cont <- lm(PM10_mean ~ activacion_doble_no_circula +
-               RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+reg_PM10_cont <- lm(PM10_max ~ activacion_doble_no_circula +
+               RH_max + TMP_max + WDR_max + WSP_max, data = data)
 #PM2.5
-reg_PM2.5_cont <- lm(PM2.5_mean ~ activacion_doble_no_circula +
-               RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+reg_PM2.5_cont <- lm(PM2.5_max ~ activacion_doble_no_circula +
+               RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # SO2
-reg_SO2_cont <- lm(SO2_mean ~ activacion_doble_no_circula +
-               RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+reg_SO2_cont <- lm(SO2_max ~ activacion_doble_no_circula +
+               RH_max + TMP_max + WDR_max + WSP_max, data = data)
 
 ####################### Summaries
 # CO
@@ -94,7 +94,7 @@ stargazer::stargazer(reg_CO, reg_NO, reg_O3, reg_PM10, reg_PM2.5, reg_SO2,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios sin controles ",
+                     title = "Resultados maximos diarios sin controles ",
                      header = FALSE)
 
 stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
@@ -106,7 +106,7 @@ stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios con controles (1)",
+                     title = "Resultados maximos diarios con controles (1)",
                      header = FALSE)
 
 stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
@@ -118,7 +118,7 @@ stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios con controles (2)",
+                     title = "Resultados maximos diarios con controles (2)",
                      header = FALSE)
 
 ################################################################################
@@ -135,17 +135,17 @@ data <- data %>%
 
 ####################### OLS - sin controles 
 # CO
-CO_lag1 <- lm(CO_mean ~ lag.1, data = data)
+CO_lag1 <- lm(CO_max ~ lag.1, data = data)
 # NO
-NO_lag1 <- lm(NO_mean ~ lag.1, data = data)
+NO_lag1 <- lm(NO_max ~ lag.1, data = data)
 # O3
-O3_lag1 <- lm(O3_mean ~ lag.1, data = data)
+O3_lag1 <- lm(O3_max ~ lag.1, data = data)
 #PM10
-PM10_lag1 <- lm(PM10_mean ~ lag.1, data = data)
+PM10_lag1 <- lm(PM10_max ~ lag.1, data = data)
 #PM2.5
-PM2.5_lag1 <- lm(PM2.5_mean ~ lag.1, data = data)
+PM2.5_lag1 <- lm(PM2.5_max ~ lag.1, data = data)
 # SO2
-SO2_lag1 <- lm(SO2_mean ~ lag.1, data = data)
+SO2_lag1 <- lm(SO2_max ~ lag.1, data = data)
 
 ####################### Summaries
 # CO
@@ -163,23 +163,23 @@ summary(SO2_lag1)
 
 ####################### OLS - controles meteorologicos
 # CO
-CO_cont_l1 <- lm(CO_mean ~ lag.1 +
-                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+CO_cont_l1 <- lm(CO_max ~ lag.1 +
+                    RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # NO
-NO_cont_l1 <- lm(NO_mean ~ lag.1 +
-                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+NO_cont_l1 <- lm(NO_max ~ lag.1 +
+                    RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # O3
-O3_cont_l1 <- lm(O3_mean ~ lag.1 +
-                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+O3_cont_l1 <- lm(O3_max ~ lag.1 +
+                    RH_max + TMP_max + WDR_max + WSP_max, data = data)
 #PM10
-PM10_cont_l1 <- lm(PM10_mean ~ lag.1 +
-                      RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+PM10_cont_l1 <- lm(PM10_max ~ lag.1 +
+                      RH_max + TMP_max + WDR_max + WSP_max, data = data)
 #PM2.5
-PM2.5_cont_l1 <- lm(PM2.5_mean ~ lag.1 +
-                       RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+PM2.5_cont_l1 <- lm(PM2.5_max ~ lag.1 +
+                       RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # SO2
-SO2_cont_l1 <- lm(SO2_mean ~ lag.1 +
-                     RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+SO2_cont_l1 <- lm(SO2_max ~ lag.1 +
+                     RH_max + TMP_max + WDR_max + WSP_max, data = data)
 
 ####################### Summaries
 # CO
@@ -207,7 +207,7 @@ stargazer::stargazer(CO_lag1, NO_lag1, O3_lag1, PM10_lag1, PM2.5_lag1, SO2_lag1,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios sin controles 1 día después",
+                     title = "Resultados maximos diarios sin controles 1 día después",
                      header = FALSE)
 
 stargazer::stargazer(CO_cont_l1, NO_cont_l1, O3_cont_l1,
@@ -219,7 +219,7 @@ stargazer::stargazer(CO_cont_l1, NO_cont_l1, O3_cont_l1,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios con controles 1 día después (1)",
+                     title = "Resultados maximos diarios con controles 1 día después (1)",
                      header = FALSE)
 
 stargazer::stargazer(PM10_cont_l1, PM2.5_cont_l1, SO2_cont_l1,
@@ -231,7 +231,7 @@ stargazer::stargazer(PM10_cont_l1, PM2.5_cont_l1, SO2_cont_l1,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios con controles 1 día despues (2)",
+                     title = "Resultados maximos diarios con controles 1 día despues (2)",
                      header = FALSE)
 
 ############################################################
@@ -240,17 +240,17 @@ stargazer::stargazer(PM10_cont_l1, PM2.5_cont_l1, SO2_cont_l1,
 
 ####################### OLS - sin controles 
 # CO
-CO_lag2 <- lm(CO_mean ~ lag.2, data = data)
+CO_lag2 <- lm(CO_max ~ lag.2, data = data)
 # NO
-NO_lag2 <- lm(NO_mean ~ lag.2, data = data)
+NO_lag2 <- lm(NO_max ~ lag.2, data = data)
 # O3
-O3_lag2 <- lm(O3_mean ~ lag.2, data = data)
+O3_lag2 <- lm(O3_max ~ lag.2, data = data)
 #PM10
-PM10_lag2 <- lm(PM10_mean ~ lag.2, data = data)
+PM10_lag2 <- lm(PM10_max ~ lag.2, data = data)
 #PM2.5
-PM2.5_lag2 <- lm(PM2.5_mean ~ lag.2, data = data)
+PM2.5_lag2 <- lm(PM2.5_max ~ lag.2, data = data)
 # SO2
-SO2_lag2 <- lm(SO2_mean ~ lag.2, data = data)
+SO2_lag2 <- lm(SO2_max ~ lag.2, data = data)
 
 ####################### Summaries
 # CO
@@ -268,23 +268,23 @@ summary(SO2_lag2)
 
 ####################### OLS - controles meteorologicos
 # CO
-CO_cont_l2 <- lm(CO_mean ~ lag.2 +
-                   RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+CO_cont_l2 <- lm(CO_max ~ lag.2 +
+                   RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # NO
-NO_cont_l2 <- lm(NO_mean ~ lag.2 +
-                   RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+NO_cont_l2 <- lm(NO_max ~ lag.2 +
+                   RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # O3
-O3_cont_l2 <- lm(O3_mean ~ lag.2 +
-                   RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+O3_cont_l2 <- lm(O3_max ~ lag.2 +
+                   RH_max + TMP_max + WDR_max + WSP_max, data = data)
 #PM10
-PM10_cont_l2 <- lm(PM10_mean ~ lag.2 +
-                     RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+PM10_cont_l2 <- lm(PM10_max ~ lag.2 +
+                     RH_max + TMP_max + WDR_max + WSP_max, data = data)
 #PM2.5
-PM2.5_cont_l2 <- lm(PM2.5_mean ~ lag.2 +
-                      RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+PM2.5_cont_l2 <- lm(PM2.5_max ~ lag.2 +
+                      RH_max + TMP_max + WDR_max + WSP_max, data = data)
 # SO2
-SO2_cont_l2 <- lm(SO2_mean ~ lag.2 +
-                    RH_mean + TMP_mean + WDR_mean + WSP_mean, data = data)
+SO2_cont_l2 <- lm(SO2_max ~ lag.2 +
+                    RH_max + TMP_max + WDR_max + WSP_max, data = data)
 
 ####################### Summaries
 # CO
@@ -312,7 +312,7 @@ stargazer::stargazer(CO_lag2, NO_lag2, O3_lag2, PM10_lag2, PM2.5_lag2, SO2_lag2,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios sin controles 2 días después",
+                     title = "Resultados maximos diarios sin controles 2 días después",
                      header = FALSE)
 
 stargazer::stargazer(CO_cont_l2, NO_cont_l2, O3_cont_l2,
@@ -324,7 +324,7 @@ stargazer::stargazer(CO_cont_l2, NO_cont_l2, O3_cont_l2,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios con controles 2 días después (1)",
+                     title = "Resultados maximos diarios con controles 2 días después (1)",
                      header = FALSE)
 
 stargazer::stargazer(PM10_cont_l2, PM2.5_cont_l2, SO2_cont_l2,
@@ -336,7 +336,7 @@ stargazer::stargazer(PM10_cont_l2, PM2.5_cont_l2, SO2_cont_l2,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
-                     title = "Resultados promedios diarios con controles 2 días despues (2)",
+                     title = "Resultados maximos diarios con controles 2 días despues (2)",
                      header = FALSE)
 
 
