@@ -3,3 +3,4 @@
 *contaminantes*.CSV
 *.tar
 .Rhistory
+.DS_Store
