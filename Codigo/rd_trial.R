@@ -1,14 +1,18 @@
-############################## RDs ############################## 
+############################## RDs with Time Controls ############################## 
 
-# Ajustar el path como corresponda
-setwd("/Users/Alvlopzam/Desktop/ITAM/Semestre 10/PolPubII/HoyNoCircula/Codigo")
-
-# Lectura de datos
-data_ma <- read.csv("../Datos/procesados/promedios_horas_moving_avg_24h.csv")
-
-
+# Libraries
 library(dplyr)
 library(lubridate)
+library(ggplot2)
+library(rdrobust)
+library(rddensity)
+library(patchwork)
+
+# Adjust corresponding path
+setwd("/Users/Alvlopzam/Desktop/ITAM/Semestre 10/PolPubII/HoyNoCircula/Codigo")
+
+# Data loading
+data_ma <- read.csv("../Datos/procesados/promedios_horas_moving_avg_24h.csv")
 
 # Ensure 'date' is POSIXct
 data_ma <- data_ma %>%
@@ -36,44 +40,37 @@ data_ma <- data_ma %>%
     )
   )
 
-
-
-
-# Load required libraries
-library(dplyr)
-library(lubridate)
-
 #Function to create time-based dummy variables
 create_time_dummies <- function(df) {
   # Ensure date column is in POSIXct format
   df$date <- as.POSIXct(df$date, format = "%Y-%m-%d %H:%M:%S")
-
+  
   # Sort by date to ensure proper ordering
   df <- df[order(df$date), ]
-
+  
   # Initialize all dummy columns with 0
   # 23 hours prior
   for(i in 23:1) {
     df[[paste0(i, "hr_prior")]] <- 0
   }
-
+  
   # Treatment period
   df$treatment <- 0
-
+  
   # 23 hours post
   for(i in 1:23) {
     df[[paste0(i, "hr_post")]] <- 0
   }
-
+  
   # Find treatment periods (where activacion_doble_no_circula == 1)
   treatment_indices <- which(df$activacion_doble_no_circula == 1)
-
+  
   # For each treatment period, mark the appropriate time windows
   for(treatment_idx in treatment_indices) {
-
+    
     # Mark treatment period
     df$treatment[treatment_idx] <- 1
-
+    
     # Mark prior hours (23 hours before)
     for(i in 1:23) {
       prior_idx <- treatment_idx - i
@@ -81,7 +78,7 @@ create_time_dummies <- function(df) {
         df[[paste0(i, "hr_prior")]][prior_idx] <- 1
       }
     }
-
+    
     # Mark post hours (23 hours after)
     for(i in 1:23) {
       post_idx <- treatment_idx + i
@@ -90,24 +87,51 @@ create_time_dummies <- function(df) {
       }
     }
   }
+  
+  return(df)
+}
 
+# Function to create time controls
+create_time_controls <- function(df) {
+  df <- df %>%
+    mutate(
+      # Month of year (1-12)
+      month = month(date),
+      
+      # Day of week (1=Sunday, 7=Saturday)
+      day_of_week = wday(date),
+      
+      # Hour of day (0-23)
+      hour_of_day = hour(date),
+      
+      # Weekend indicator (Saturday=7, Sunday=1)
+      is_weekend = ifelse(day_of_week %in% c(1, 7), 1, 0),
+      
+      # Interaction: weekend * hour
+      weekend_hour_interaction = is_weekend * hour_of_day
+    )
+  
+  # Create month dummy variables (using January as reference)
+  for(i in 2:12) {
+    df[[paste0("month_", i)]] <- ifelse(df$month == i, 1, 0)
+  }
+  
+  # Create day of week dummy variables (using Sunday as reference)
+  for(i in 2:7) {
+    df[[paste0("dow_", i)]] <- ifelse(df$day_of_week == i, 1, 0)
+  }
+  
+  # Create hour of day dummy variables (using hour 0 as reference)
+  for(i in 1:23) {
+    df[[paste0("hour_", i)]] <- ifelse(df$hour_of_day == i, 1, 0)
+  }
+  
   return(df)
 }
 
 # Apply the function to your dataset
-# Assuming your dataset is called 'your_data'
 data_ma_rd <- create_time_dummies(data_ma)
-
-
-# Load required libraries
-library(dplyr)
-library(ggplot2)
-library(rdrobust)
-library(rddensity)
-library(lubridate)
-
-# Assuming you already have your data with dummy variables from the previous step
-# Let's call it 'data_ma_rd'
+data_ma_rd <- create_time_controls(data_ma_rd)
 
 # Step 1: Create the running variable (time relative to treatment)
 create_rd_data <- function(df) {
@@ -134,9 +158,6 @@ create_rd_data <- function(df) {
   
   return(df)
 }
-
-# Apply the function
-rd_data <- create_rd_data(data_ma_rd)
 
 # Step 2: Basic RD visualization
 plot_rd_raw <- function(data, bandwidth = 24) {
@@ -197,68 +218,118 @@ plot_rd_binned <- function(data, bandwidth = 24, n_bins = 20) {
     theme_minimal()
 }
 
-# Step 4: RD estimation using rdrobust
-run_rd_analysis <- function(data, bandwidth = NULL) {
+# Modified RD estimation function with time controls
+run_rd_analysis_with_controls <- function(data, bandwidth = NULL, include_controls = TRUE) {
   # Filter out missing values
   analysis_data <- data %>%
     filter(!is.na(PM10), !is.na(time_to_treatment))
   
-  # Run RD estimation
-  if(is.null(bandwidth)) {
-    # Let rdrobust choose optimal bandwidth
-    rd_result <- rdrobust(y = analysis_data$PM10, 
-                          x = analysis_data$time_to_treatment,
-                          c = 0)
+  if (include_controls) {
+    # Prepare covariates matrix
+    # Month dummies (excluding reference month 1)
+    month_vars <- paste0("month_", 2:12)
+    
+    # Day of week dummies (excluding reference day 1 = Sunday)
+    dow_vars <- paste0("dow_", 2:7)
+    
+    # Hour dummies (excluding reference hour 0)
+    hour_vars <- paste0("hour_", 1:23)
+    
+    # Weekend-hour interaction
+    interaction_var <- "weekend_hour_interaction"
+    
+    # Combine all control variables
+    control_vars <- c(month_vars, dow_vars, hour_vars, interaction_var)
+    
+    # Create covariates matrix (only include variables that exist in data)
+    existing_vars <- control_vars[control_vars %in% names(analysis_data)]
+    
+    if (length(existing_vars) > 0) {
+      covs_matrix <- as.matrix(analysis_data[, existing_vars, drop = FALSE])
+      
+      # Run RD estimation with covariates
+      if(is.null(bandwidth)) {
+        rd_result <- rdrobust(y = analysis_data$PM10, 
+                              x = analysis_data$time_to_treatment,
+                              c = 0,
+                              covs = covs_matrix)
+      } else {
+        rd_result <- rdrobust(y = analysis_data$PM10, 
+                              x = analysis_data$time_to_treatment,
+                              c = 0, 
+                              h = bandwidth,
+                              covs = covs_matrix)
+      }
+    } else {
+      warning("No control variables found in data. Running without controls.")
+      if(is.null(bandwidth)) {
+        rd_result <- rdrobust(y = analysis_data$PM10, 
+                              x = analysis_data$time_to_treatment,
+                              c = 0)
+      } else {
+        rd_result <- rdrobust(y = analysis_data$PM10, 
+                              x = analysis_data$time_to_treatment,
+                              c = 0, 
+                              h = bandwidth)
+      }
+    }
   } else {
-    # Use specified bandwidth
-    rd_result <- rdrobust(y = analysis_data$PM10, 
-                          x = analysis_data$time_to_treatment,
-                          c = 0, 
-                          h = bandwidth)
+    # Run without controls (original specification)
+    if(is.null(bandwidth)) {
+      rd_result <- rdrobust(y = analysis_data$PM10, 
+                            x = analysis_data$time_to_treatment,
+                            c = 0)
+    } else {
+      rd_result <- rdrobust(y = analysis_data$PM10, 
+                            x = analysis_data$time_to_treatment,
+                            c = 0, 
+                            h = bandwidth)
+    }
   }
   
   return(rd_result)
 }
 
-# Step 7: Execute the analysis
-print("=== REGRESSION DISCONTINUITY ANALYSIS FOR PM10 ===")
-
-# Create RD data
-rd_data <- create_rd_data(data_ma_rd)
-
-# Basic summary statistics
-cat("\nSummary of data around treatment:\n")
-summary_stats <- rd_data %>%
-  filter(abs(time_to_treatment) <= 24) %>%
-  group_by(treated) %>%
-  summarise(
-    n_obs = n(),
-    mean_pm10 = mean(PM10, na.rm = TRUE),
-    sd_pm10 = sd(PM10, na.rm = TRUE),
-    .groups = 'drop'
+# Function to compare results with and without controls
+compare_rd_results <- function(data, particle_var = "PM10") {
+  # Temporarily rename particle variable for analysis
+  data$PM10 <- data[[particle_var]]
+  rd_data <- create_rd_data(data)
+  
+  # Run analysis without controls
+  cat("\n=== RESULTS WITHOUT CONTROLS ===\n")
+  rd_no_controls <- run_rd_analysis_with_controls(rd_data, include_controls = FALSE)
+  print(summary(rd_no_controls))
+  
+  # Run analysis with controls
+  cat("\n=== RESULTS WITH TIME CONTROLS ===\n")
+  rd_with_controls <- run_rd_analysis_with_controls(rd_data, include_controls = TRUE)
+  print(summary(rd_with_controls))
+  
+  # Extract key results for comparison
+  results_comparison <- data.frame(
+    Specification = c("Without Controls", "With Controls"),
+    Coefficient = c(rd_no_controls$coef[1], rd_with_controls$coef[1]),
+    SE = c(rd_no_controls$se[1], rd_with_controls$se[1]),
+    P_value = c(rd_no_controls$pv[1], rd_with_controls$pv[1]),
+    CI_lower = c(rd_no_controls$ci[1,1], rd_with_controls$ci[1,1]),
+    CI_upper = c(rd_no_controls$ci[1,2], rd_with_controls$ci[1,2]),
+    Bandwidth = c(rd_no_controls$bws[1,1], rd_with_controls$bws[1,1]),
+    N_left = c(rd_no_controls$N[1], rd_with_controls$N[1]),
+    N_right = c(rd_no_controls$N[2], rd_with_controls$N[2])
   )
-print(summary_stats)
+  
+  cat("\n=== COMPARISON TABLE ===\n")
+  print(results_comparison)
+  
+  return(list(
+    no_controls = rd_no_controls,
+    with_controls = rd_with_controls,
+    comparison = results_comparison
+  ))
+}
 
-# Generate plots
-print("\nGenerating RD plots...")
-p1 <- plot_rd_raw(rd_data, bandwidth = 24)
-p2 <- plot_rd_binned(rd_data, bandwidth = 24)
-
-print(p1)
-print(p2)
-
-# Main RD estimation
-print("\n=== MAIN RD RESULTS ===")
-main_rd <- run_rd_analysis(rd_data)
-print(summary(main_rd))
-
-print("\n=== INTERPRETATION GUIDE ===")
-cat("1. Look at the RD plots to visually assess if there's a discontinuity at time 0\n")
-cat("2. The main RD estimate shows the treatment effect size and significance\n")
-
-
-############################# Final run ################################
-library(patchwork)
+############################# Final run with controls ################################
 
 # Function to generate RD plots for a given particle and dataset
 generate_rd_plots <- function(data, particle_var, title_prefix) {
@@ -287,6 +358,7 @@ data_ma_no_shift$activacion_doble_no_circula <- ifelse(
   as_date(data_ma_no_shift$date) %in% dates_with_policy, 1, 0
 )
 data_ma_no_shift <- create_time_dummies(data_ma_no_shift)
+data_ma_no_shift <- create_time_controls(data_ma_no_shift)  # Add time controls
 
 plots_no_shift <- lapply(particles, function(p) {
   generate_rd_plots(data_ma_no_shift, p, "No Shift")
@@ -295,6 +367,7 @@ plots_no_shift <- lapply(particles, function(p) {
 # === WITH 6HR SHIFT ===
 data_ma_shift <- data_ma  # already includes shifted treatment
 data_ma_shift <- create_time_dummies(data_ma_shift)
+data_ma_shift <- create_time_controls(data_ma_shift)  # Add time controls
 
 plots_shift <- lapply(particles, function(p) {
   generate_rd_plots(data_ma_shift, p, "6hr Shift")
@@ -312,125 +385,124 @@ print(plots_shift[[1]] + plot_annotation(title = "PM10 – 6hr Shift"))
 print(plots_shift[[2]] + plot_annotation(title = "PM2.5 – 6hr Shift"))
 print(plots_shift[[3]] + plot_annotation(title = "O3 – 6hr Shift"))
 
+# === ANALYSIS WITH AND WITHOUT CONTROLS ===
 
+cat("\n", paste(rep("=", 80), collapse = ""), "\n")
+cat("REGRESSION DISCONTINUITY ANALYSIS WITH TIME CONTROLS\n")
+cat(paste(rep("=", 80), collapse = ""), "\n")
 
+# Generate plots WITH CONTROLS for comparison
+cat("\n### GENERATING PLOTS WITH CONTROLS ###\n")
 
+# Function to generate residualized plots (after removing time controls)
+generate_rd_plots_residualized <- function(data, particle_var, title_prefix) {
+  if (!particle_var %in% names(data)) {
+    warning(paste("Skipping:", particle_var, "not found in data"))
+    return(NULL)
+  }
+  
+  # Create temporary copy for residualization
+  temp_data <- data
+  temp_data$outcome <- temp_data[[particle_var]]
+  
+  # Create formula for time controls
+  month_vars <- paste0("month_", 2:12)
+  dow_vars <- paste0("dow_", 2:7)
+  hour_vars <- paste0("hour_", 1:23)
+  interaction_var <- "weekend_hour_interaction"
+  
+  control_vars <- c(month_vars, dow_vars, hour_vars, interaction_var)
+  existing_vars <- control_vars[control_vars %in% names(temp_data)]
+  
+  if(length(existing_vars) > 0) {
+    # Residualize outcome against time controls
+    control_formula <- as.formula(paste("outcome ~", paste(existing_vars, collapse = " + ")))
+    residual_model <- lm(control_formula, data = temp_data, na.action = na.exclude)
+    temp_data$PM10 <- residuals(residual_model)  # Use residualized outcome for plotting
+    
+    # Add back the mean for interpretability
+    temp_data$PM10 <- temp_data$PM10 + mean(temp_data$outcome, na.rm = TRUE)
+  } else {
+    temp_data$PM10 <- temp_data$outcome  # No residualization if no controls
+  }
+  
+  rd_data <- create_rd_data(temp_data)
+  
+  p_raw <- plot_rd_raw(rd_data, bandwidth = 24) +
+    labs(title = paste(title_prefix, "-", particle_var, "(Raw, Residualized)"),
+         subtitle = "Outcome residualized against time controls")
+  p_binned <- plot_rd_binned(rd_data, bandwidth = 24) +
+    labs(title = paste(title_prefix, "-", particle_var, "(Binned, Residualized)"),
+         subtitle = "Outcome residualized against time controls")
+  
+  return(p_raw + p_binned + plot_layout(ncol = 2))
+}
 
+# NO SHIFT - WITH CONTROLS PLOTS
+cat("\n--- NO SHIFT: Plots with Time Controls (Residualized) ---\n")
+plots_no_shift_controls <- lapply(particles, function(p) {
+  generate_rd_plots_residualized(data_ma_no_shift, p, "No Shift + Controls")
+})
 
+print(plots_no_shift_controls[[1]] + plot_annotation(title = "PM10 – No Shift (With Time Controls)"))
+print(plots_no_shift_controls[[2]] + plot_annotation(title = "PM2.5 – No Shift (With Time Controls)"))
+print(plots_no_shift_controls[[3]] + plot_annotation(title = "O3 – No Shift (With Time Controls)"))
 
+# 6HR SHIFT - WITH CONTROLS PLOTS
+cat("\n--- 6HR SHIFT: Plots with Time Controls (Residualized) ---\n")
+plots_shift_controls <- lapply(particles, function(p) {
+  generate_rd_plots_residualized(data_ma_shift, p, "6hr Shift + Controls")
+})
 
-############################## RDs WITH FIXED EFFECTS & PLOTS ##############################
+print(plots_shift_controls[[1]] + plot_annotation(title = "PM10 – 6hr Shift (With Time Controls)"))
+print(plots_shift_controls[[2]] + plot_annotation(title = "PM2.5 – 6hr Shift (With Time Controls)"))
+print(plots_shift_controls[[3]] + plot_annotation(title = "O3 – 6hr Shift (With Time Controls)"))
 
-# Set working directory
-setwd("/Users/Alvlopzam/Desktop/ITAM/Semestre 10/PolPubII/HoyNoCircula/Codigo")
+# === COMPARISON: SIDE-BY-SIDE PLOTS ===
+cat("\n### SIDE-BY-SIDE COMPARISON PLOTS ###\n")
 
-# Load libraries
-library(dplyr)
-library(lubridate)
-library(ggplot2)
-library(fixest)
-
-# Load data
-data_ma <- read.csv("../Datos/procesados/promedios_horas_moving_avg_24h.csv") %>%
-  mutate(date = ymd_hms(date)) %>%
-  arrange(date) %>%
-  mutate(date_day = as_date(date))
-
-# Identify days with full-day policy
-dates_with_policy <- data_ma %>%
-  group_by(date_day) %>%
-  summarize(policy_day = all(activacion_doble_no_circula == 1)) %>%
-  filter(policy_day) %>%
-  pull(date_day)
-
-# Apply 6am-6am shift to treatment variable
-data_ma <- data_ma %>%
-  mutate(
-    activacion_doble_no_circula_shifted = if_else(
-      (as_date(date) %in% dates_with_policy & hour(date) >= 6) |
-        (as_date(date - hours(6)) %in% dates_with_policy & hour(date) < 6),
-      1, 0
-    )
-  )
-
-# Function to create RD variables
-create_rd_data <- function(df, treatment_col) {
-  df$treatment <- df[[treatment_col]]
-  df$time_to_treatment <- NA
-  treatment_indices <- which(df$treatment == 1)
-  for(i in 1:nrow(df)) {
-    if(length(treatment_indices) > 0) {
-      distances <- abs(i - treatment_indices)
-      closest_treatment_idx <- treatment_indices[which.min(distances)]
-      df$time_to_treatment[i] <- i - closest_treatment_idx
+# Function to create side-by-side comparison
+create_comparison_plots <- function(plots_original, plots_controls, particle_names, shift_type) {
+  for(i in seq_along(particle_names)) {
+    if(!is.null(plots_original[[i]]) && !is.null(plots_controls[[i]])) {
+      combined_plot <- plots_original[[i]] / plots_controls[[i]] + 
+        plot_layout(nrow = 2) +
+        plot_annotation(
+          title = paste(particle_names[i], "–", shift_type, ": Original vs With Controls"),
+          subtitle = "Top: Original specification | Bottom: With time controls (residualized)"
+        )
+      print(combined_plot)
     }
   }
-  df$treated <- ifelse(df$time_to_treatment >= 0, 1, 0)
-  return(df)
 }
 
-# Prepare data for both versions
-data_noshift <- create_rd_data(data_ma, "activacion_doble_no_circula")
-data_shifted <- create_rd_data(data_ma, "activacion_doble_no_circula_shifted")
+# Generate comparison plots
+cat("\n--- Comparison: No Shift Specification ---\n")
+create_comparison_plots(plots_no_shift, plots_no_shift_controls, particles, "No Shift")
 
-# Create fixed effects
-add_fixed_effects <- function(df) {
-  df$year_fe <- factor(year(df$date))
-  df$dow_fe <- factor(wday(df$date, label = TRUE))
-  df$hour_fe <- factor(hour(df$date))
-  df$weekend <- ifelse(wday(df$date) %in% c(1, 7), 1, 0)
-  df$weekend_hour <- interaction(df$weekend, df$hour_fe)
-  return(df)
+cat("\n--- Comparison: 6hr Shift Specification ---\n")
+create_comparison_plots(plots_shift, plots_shift_controls, particles, "6hr Shift")
+
+# Analysis for each particle type - NO SHIFT
+cat("\n### NO SHIFT SPECIFICATION - NUMERICAL RESULTS ###\n")
+for(particle in particles) {
+  if(particle %in% names(data_ma_no_shift)) {
+    cat(paste("\n--- Analysis for", particle, "---\n"))
+    results <- compare_rd_results(data_ma_no_shift, particle)
+  }
 }
 
-data_noshift <- add_fixed_effects(data_noshift)
-data_shifted <- add_fixed_effects(data_shifted)
-
-# Function to run RD with fixed effects
-run_rd_with_fe <- function(data, particle) {
-  df <- data %>%
-    filter(!is.na(time_to_treatment), !is.na(.data[[particle]]), abs(time_to_treatment) <= 24)
-  
-  formula <- as.formula(paste0(particle, " ~ treated | year_fe + dow_fe + hour_fe + weekend_hour"))
-  
-  model <- feols(formula, data = df)
-  
-  return(list(model = model, data = df))
+# Analysis for each particle type - 6HR SHIFT
+cat("\n### 6HR SHIFT SPECIFICATION - NUMERICAL RESULTS ###\n")
+for(particle in particles) {
+  if(particle %in% names(data_ma_shift)) {
+    cat(paste("\n--- Analysis for", particle, "---\n"))
+    results <- compare_rd_results(data_ma_shift, particle)
+  }
 }
 
-# Function to plot results
-plot_rd_result <- function(df, model, pollutant, shift_label) {
-  df$pred <- predict(model, newdata = df)
-  avg_df <- df %>%
-    group_by(time_to_treatment) %>%
-    summarize(mean_pollutant = mean(.data[[pollutant]], na.rm = TRUE),
-              mean_pred = mean(pred, na.rm = TRUE),
-              se = sd(.data[[pollutant]], na.rm = TRUE) / sqrt(n())) %>%
-    filter(abs(time_to_treatment) <= 24)
-  
-  ggplot(avg_df, aes(x = time_to_treatment)) +
-    geom_point(aes(y = mean_pollutant), color = "black", alpha = 0.6) +
-    geom_line(aes(y = mean_pred), color = "blue", size = 1) +
-    geom_vline(xintercept = 0, linetype = "dashed") +
-    geom_errorbar(aes(ymin = mean_pollutant - 1.96*se, ymax = mean_pollutant + 1.96*se), width = 0.5) +
-    labs(title = paste("RD with Fixed Effects:", pollutant, "-", shift_label),
-         x = "Hours from treatment",
-         y = pollutant) +
-    theme_minimal()
-}
-
-# Loop over pollutants and display both model summaries and plots
-for (pollutant in c("PM10", "PM2.5", "O3")) {
-  # No Shift
-  result_noshift <- run_rd_with_fe(data_noshift, pollutant)
-  cat("=== RD with Fixed Effects: ", pollutant, " (No Shift) ===\n")
-  print(summary(result_noshift$model, cluster = "date_day"))
-  print(plot_rd_result(result_noshift$data, result_noshift$model, pollutant, "No Shift"))
-  
-  # Shifted
-  result_shifted <- run_rd_with_fe(data_shifted, pollutant)
-  cat("=== RD with Fixed Effects: ", pollutant, " (Shifted) ===\n")
-  print(summary(result_shifted$model, cluster = "date_day"))
-  print(plot_rd_result(result_shifted$data, result_shifted$model, pollutant, "Shifted"))
-}
-
+print("\n=== INTERPRETATION GUIDE ===")
+cat("1. Compare coefficients between specifications with and without controls\n")
+cat("2. Time controls include: month FE, day-of-week FE, hour-of-day FE, weekend×hour interaction\n")
+cat("3. If results are robust, coefficients should be similar across specifications\n")
+cat("4. Controls help account for systematic time patterns in pollution levels\n")
