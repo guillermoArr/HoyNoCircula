@@ -116,7 +116,7 @@ summary(reg_SO2_cont)
 ####################### GENERACION DE TABLAS
 
 stargazer::stargazer(reg_CO, reg_NO, reg_O3, reg_PM10, reg_PM2.5, reg_SO2,
-                     type = "text",
+                     type = "latex",
                      font.size = "tiny",
                      star.cutoffs = c(0.1, 0.05, 0.01),
                      column.sep.width = "1pt",
@@ -130,7 +130,7 @@ stargazer::stargazer(reg_CO, reg_NO, reg_O3, reg_PM10, reg_PM2.5, reg_SO2,
                      header = FALSE)
 
 stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
-                     type = "text",
+                     type = "latex",
                      font.size = "tiny",
                      star.cutoffs = c(0.1, 0.05, 0.01),
                      column.sep.width = "1pt",
@@ -145,7 +145,7 @@ stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
                      header = FALSE)
 
 stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
-                     type = "text",
+                     type = "latex",
                      font.size = "tiny",
                      star.cutoffs = c(0.1, 0.05, 0.01),
                      column.sep.width = "1pt",
@@ -158,3 +158,7 @@ stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
                      title = "Resultados promedios diarios con controles (2)",
                      df = FALSE,
                      header = FALSE)
+
+################################################################
+
+
