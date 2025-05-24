@@ -161,4 +161,40 @@ stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
 
 ################################################################
 
+# lag 6 horas
+data <- data %>% 
+  mutate(
+    lag1 = lag(activacion_doble_no_circula, n = 6, default = 0)
+  )
 
+####################### OLS - controles
+# O3
+lag_O3_cont <- lm(O3 ~ lag1 +
+                    RH + TMP + WDR + WSP + 
+                    as.factor(month) + as.factor(day_of_week) + 
+                    as.factor(hour_of_day)*is_weekend, data = data)
+#PM10
+lag_PM10_cont <- lm(PM10 ~ lag1 +
+                      RH + TMP + WDR + WSP + 
+                      as.factor(month) + as.factor(day_of_week) + 
+                      as.factor(hour_of_day)*is_weekend, data = data)
+#PM2.5
+lag_PM2.5_cont <- lm(PM2.5 ~ lag1 +
+                       RH + TMP + WDR + WSP + 
+                       as.factor(month) + as.factor(day_of_week) + 
+                       as.factor(hour_of_day)*is_weekend, data = data)
+
+stargazer::stargazer(lag_O3_cont, lag_PM10_cont, lag_PM2.5_cont,
+                     type = "latex",
+                     font.size = "tiny",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep = c("circula", "RH", "TMP", "WDR", "WSP", "Cons"),
+                     covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
+                     column.labels = c("O3", "PM10", "PM2.5"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios moviles (+6 h) con controles",
+                     df = FALSE,
+                     header = FALSE)
