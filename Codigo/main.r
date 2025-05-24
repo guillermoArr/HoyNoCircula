@@ -10,7 +10,7 @@ library(data.table)
 library(ggplot2)
 
 ## Establece el directorio base
-setwd("C:/Users/marie/Desktop/ITAM/HoyNoCircula")
+setwd("ITAM/10 Sem/PolPub/HoyNoCircula")
 ### Establece directorios de fuentes de datos
 DATA.PATH <- paste0(getwd(), "/Datos/final/")
 data <- read.csv(paste0(DATA.PATH, "contaminantes_meteorologia.csv"))
@@ -94,6 +94,7 @@ stargazer::stargazer(reg_CO, reg_NO, reg_O3, reg_PM10, reg_PM2.5, reg_SO2,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios sin controles ",
                      header = FALSE)
 
@@ -106,6 +107,7 @@ stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios con controles (1)",
                      header = FALSE)
 
@@ -118,6 +120,7 @@ stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios con controles (2)",
                      header = FALSE)
 
@@ -207,6 +210,7 @@ stargazer::stargazer(CO_lag1, NO_lag1, O3_lag1, PM10_lag1, PM2.5_lag1, SO2_lag1,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios sin controles 1 día después",
                      header = FALSE)
 
@@ -219,6 +223,7 @@ stargazer::stargazer(CO_cont_l1, NO_cont_l1, O3_cont_l1,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios con controles 1 día después (1)",
                      header = FALSE)
 
@@ -231,6 +236,7 @@ stargazer::stargazer(PM10_cont_l1, PM2.5_cont_l1, SO2_cont_l1,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios con controles 1 día despues (2)",
                      header = FALSE)
 
@@ -312,6 +318,7 @@ stargazer::stargazer(CO_lag2, NO_lag2, O3_lag2, PM10_lag2, PM2.5_lag2, SO2_lag2,
                      covariate.labels = c("DHNC", "Cte"),
                      column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios sin controles 2 días después",
                      header = FALSE)
 
@@ -324,6 +331,7 @@ stargazer::stargazer(CO_cont_l2, NO_cont_l2, O3_cont_l2,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("CO", "NO", "O3"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios con controles 2 días después (1)",
                      header = FALSE)
 
@@ -336,6 +344,7 @@ stargazer::stargazer(PM10_cont_l2, PM2.5_cont_l2, SO2_cont_l2,
                      covariate.labels = c("DHNC", "Humedad", "Temperatura", "Dir Viento", "Vel Viento", "Cte"),
                      column.labels = c("PM10", "PM2.5", "SO2"),
                      dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
                      title = "Resultados promedios diarios con controles 2 días despues (2)",
                      header = FALSE)
 
