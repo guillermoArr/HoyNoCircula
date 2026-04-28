@@ -8,7 +8,6 @@ Elaborado por:
 - Santiago Olvera Moreno
 - Alvaro López Zamora
 - Mauricio Vázquez Morán
-- Emilio González Luna
 
 Aserorado por:
 - Dra. Antonella Bandiera
