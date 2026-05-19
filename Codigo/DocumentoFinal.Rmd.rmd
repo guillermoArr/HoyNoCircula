@@ -1,0 +1,604 @@
+---
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    number_sections: true
+    toc: false
+    keep_tex: true
+    includes:
+      in_header: preambulo.tex
+fontsize: 12pt
+geometry: margin=2.5cm
+linestretch: 2
+mainfont: "Times New Roman"
+---
+
+\begin{center}
+\Large \textbf{Evaluación del impacto del programa "Doble Hoy No Circula" sobre la calidad del aire en CDMX durante 2016-2024}\\[0.5em]
+\large Guillermo Arredondo (197256), Alvaro López (198442), Santiago Olvera (194701), Emilio González, Mauricio Vázquez (191686)\\[0.25em]
+\normalsize Instituto Tecnológico Autónomo de México (ITAM)\\[0.5em]
+\end{center}
+
+\vspace{1em}
+
+---
+
+\noindent\textbf{Resumen}
+
+\noindent Este estudio evalúa el impacto causal del programa _Doble Hoy No Circula_ (DHNC) en la calidad del aire de la Ciudad de México, mediante una estrategia combinada de regresión discontinua (RDD) y selection on observables. Utilizando datos de contaminantes atmosféricos ($O_3$, $PM_{10}$ y $PM_{2.5}$) y variables meteorológicas del período 2016-2024, se analizó el efecto de esta política que se implementa durante contingencias ambientales. Los resultados de regresión discontinua muestran coeficientes positivos significativos que reflejan el momento de activación del programa durante episodios de alta contaminación. Sin embargo, el análisis temporal revela una reducción gradual en los niveles de contaminantes dentro de las 24 horas posteriores a la implementación, lo que sugiere una efectividad limitada pero mesurable del programa en la mejora de la calidad del aire.
+
+\vspace{1em}
+
+\noindent\textbf{Palabras clave:} Doble Hoy No Circula, calidad del aire, compra de vehículos, regresión discontinua, diferencias en diferencias, política ambiental, Ciudad de México.
+
+\newpage
+
+# Marco Teórico
+
+## Pregunta central
+
+En las interacciones entre el campo ambiental y el campo económico, usualmente hay controversia. Por lo general, en los países desarrollados, en agenda de política ambiental, el camino ha sido trazado desde el siglo pasado. Por su parte, las naciones o territorios, que han “dejado” esta agenda de lado, se han visto envueltos en escándalos de contaminación y calidad de vida en el último cuarto siglo. Sin dar más preámbulo, desde los años 90, la Ciudad de México, mediante su política _Hoy No Circula_, ha intentado abordar el gran problema medioambiental que tiene el Valle de México. Sin dar los resultados esperados por 24 años, en 2014 se implementó, como medida de emergencia, la extensión de dicha política con el programa _Doble Hoy No Circula_. Al igual que su primera versión, este programa tiene el fin de enfrentar altos niveles de contaminación atmosférica. Sin embargo, este difiere en que restringe la circulación de todos los vehículos un día adicional a la semana sin importar su holograma.
+
+Desde su desarrollo teórico, ambos programas han sido cuestionados desde los frentes ambiental y económico. Por un lado, se ha cuestionado la efectividad ambiental del programa. Por otro lado, se ha cuestionado si ha incentivado la compra de vehículos “suplentes” en los hogares mexicanos. Estas preocupaciones han motivado diversos estudios académicos, económicos, políticos y ambientales. En este contexto, la pregunta de investigación que guió este proyecto fue la siguiente: ¿en qué medida la implementación del programa _Doble Hoy No Circula_ influye en la mejoría de la calidad del aire?
+
+
+## Literatura relevante
+
+Parte de la inspiración de este proyecto proviene del estudio académico, publicado por Lucas W. Davis (Universidad de Michigan),  “The Effect of Driving Restrictions on Air Quality in Mexico City”. En específico, el estudio analiza el impacto del programa original _Hoy No Circula_. Mediante un diseño cuasi-experimental, que incluye análisis de regresión discontinua y control de factores climáticos y estacionales, Davis encuentra poca evidencia de que el programa haya mejorado la calidad del aire. Por el contrario, el estudio señala que los ciudadanos respondieron a la restricción adquiriendo vehículos adicionales. Esto último, provocó un aumento en la cantidad de autos en circulación y en las emisiones contaminantes.
+
+Por otro lado, el estudio expone que no se observó una sustitución hacia el transporte público y que, incluso, se incrementó los niveles de contaminación durante los fines de semana y en horarios nocturnos. Cabe subrayar que, estas respuestas de comportamiento de los ciudadanos al programa, minaron los objetivos ambientales de la política. Se sigue de aquí que este estudio sea relevante para la investigación, ya que ofrece una evaluación del primer programa de restricción vehicular en la ciudad y permite establecer una base para analizar la versión más estricta del programa, es decir, el _Doble Hoy No Circula_. 
+
+
+## Contribución al conocimiento
+
+Esta investigación contribuye al actual conocimiento al evaluar, desde una perspectiva causal, los efectos del programa _Doble Hoy No Circula_. Esta versión más estricta del esquema original, ha sido poco estudiada hasta ahora. Al igual que el estudio previo mencionado, (Davis, 2008), el cual está centrado en el programa inicial, este trabajo también analiza el impacto en la calidad del aire. Esto último, busca llenar el vacío intelectual sobre esta intensa versión de política de restricción vehicular en la Ciudad de México. Además, siempre es importante evaluar el efecto de los programas políticos para identificar puntos de mejora.
+
+# Variables y datos
+
+## Definiciones
+
+El análisis utiliza datos de la plataforma de Unidad de Transparencia de la Ciudad de México, en la cual obtuvimos las fechas en las que hubo contingencia ambiental a partir de 2016 y hasta 2024. Por otro lado, se utilizaron los datos abiertos de la calidad del aire y datos meteorológicos en el mismo periodo. Dichos datos se procesaron calculando promedios por hora, debido a que la información original estaba segmentada por distrito. Finalmente, unimos las dos bases de datos por fecha. Las variables clave utilizadas en el estudio son: 
+
+* **Variables dependientes**:
+  * Calidad del aire, medida por siete parámetros de los que destacan tres: $O_3$, $PM_{2.5}$ y $PM_{10}$ ($\mu g/m^3$).
+  
+* **Variable de tratamiento**:
+  * Codificada como variable binaria o dummy (1 si el programa está activo, 0 si no), la implementación del programa _Doble Hoy No Circula_.
+  
+* **Variables de control**:
+  * Factores meteorológicos como temperatura, humedad, viento
+  * Efectos de calendario como el día de la semana, mes del año, hora de día y si es fin de semana
+
+## Usos
+
+Los datos descritos permiten evaluar, desde una perspectiva causal, los efectos del programa _Doble Hoy No Circula_. En específico, permiten evaluar la evolución de la calidad del aire a partir de su implementación en 2016 y hasta hoy en día. La combinación de datos atmosféricos de alta frecuencia facilita desarrollar un análisis aislado del impacto de otros factores concurrentes. Por lo tanto, esto permite estimar, de forma más precisa, sus efectos ambientales en la Ciudad de México.
+
+## Estadísticas descriptivas
+
+```{r setup, include=FALSE}
+# Ajustes  y librerias
+knitr::opts_chunk$set(echo = FALSE, caption.above = TRUE, fig.pos = "H", fig.align = "center")  
+
+library(tidyverse)
+library(kableExtra)
+library(dplyr)
+library(MASS)
+library(stargazer)
+library(estimatr)
+library(magrittr)
+library(broom)
+library(tableone)
+library(haven)
+library(fixest)
+library(purrr)
+library(gridExtra)
+```
+
+### Análisis univariado
+
+En esta sección, se presentan estadísticas descriptivas para las principales variables incluidas en el estudio. La tabla muestra el número total de observaciones, el porcentaje de valores faltantes, así como los valores mínimo, promedio, desviación estándar y máximo para cada variable. Es importante aclarar que estas estadísticas se obtienen sobre los promedios móviles previamente calculados.
+
+```{r pressure, echo=FALSE, warning=FALSE}
+# Cargar los datos
+data_uni <- read_csv("promedios_horas_moving_avg_24h.csv", show_col_types = FALSE)
+
+# Funcion de analisis univariado
+univar_analisis <- function(data) {
+  results <- list()
+  
+  for (feature in colnames(data)) {
+    data_type <- class(data[[feature]])[1]
+    
+    total <- nrow(data)
+    nan_count <- sum(is.na(data[[feature]]))
+    no_missings <- total - nan_count
+    pct_missings <- nan_count / total
+    
+    if (is.numeric(data[[feature]])) {
+      promedio <- round(mean(data[[feature]], na.rm = TRUE),2)
+      desv_estandar <- round(sd(data[[feature]], na.rm = TRUE),2)
+      varianza <- round(var(data[[feature]], na.rm = TRUE),2)
+      minimo <- min(data[[feature]], na.rm = TRUE)
+      p10 <- quantile(data[[feature]], 0.10, na.rm = TRUE)
+      q1 <- quantile(data[[feature]], 0.25, na.rm = TRUE)
+      mediana <- quantile(data[[feature]], 0.50, na.rm = TRUE)
+      q3 <- quantile(data[[feature]], 0.75, na.rm = TRUE)
+      p90 <- quantile(data[[feature]], 0.90, na.rm = TRUE)
+      maximo <- max(data[[feature]], na.rm = TRUE)
+      
+      inf_count <- sum(is.infinite(data[[feature]]) & data[[feature]] > 0)
+      neg_inf_count <- sum(is.infinite(data[[feature]]) & data[[feature]] < 0)
+    } else {
+      promedio <- NA
+      desv_estandar <- NA
+      varianza <- NA
+      minimo <- NA
+      p10 <- NA
+      q1 <- NA
+      mediana <- NA
+      q3 <- NA
+      p90 <- NA
+      maximo <- NA
+    }
+    
+    results[[length(results) + 1]] <- list(
+      
+      Variable = feature,
+      DataType = data_type,
+      Total = total,
+      No_Missings = no_missings,
+      Missings = nan_count,
+      Pct_Missings = pct_missings,
+      Promedio = promedio,
+      Desv_Std = desv_estandar,
+      Varianza = varianza,
+      Minimo = minimo,
+      p10 = p10,
+      q1 = q1,
+      Mediana = mediana,
+      q3 = q3,
+      p90 = p90,
+      Maximo = maximo
+    )
+  }
+  
+  result_df <- do.call(rbind, lapply(results, as.data.frame))
+  
+  rownames(result_df) <- NULL
+  
+  return(result_df)
+  
+}
+
+# Renombrar activacion_doble_no_circula por dummy_act
+data_uni <- data_uni %>% rename(DHNC = activacion_doble_no_circula)
+
+# Aplicar la función de análisis univariado
+resultados <- univar_analisis(data_uni)
+
+# Separar el análisis en dos partes
+resultados_parte1 <- resultados[, c("Variable", "Total", "Pct_Missings","Minimo" ,"Promedio", "Desv_Std", "Maximo")]
+
+# Mostrar los resultados en dos tablas separadas por margenes de pagina
+resultados_parte1 %>%
+  kable(caption = "Análisis univariado", booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down"),
+                full_width = FALSE)
+```
+
+Los contaminantes atmosféricos clave como $PM_{10}$, $PM_{2.5}$ y $O_3$ tienen una variabilidad considerable. Esto indica la presencia de eventos de contaminación aguda durante el tiempo analizado. Además, se observa que las variables meteorológicas, como la temperatura ($TMP$), no tienen datos faltantes y presentan promedios que son consistentes con el clima de la Ciudad de México.
+
+### Temporalidades
+
+El análisis temporal de las variables mostradas ($O_3$, $PM_{2.5}$ y $PM_{10}$) busca identificar patrones estacionales por hora, tendencias a lo largo del tiempo y posibles efectos asociados con la implementación del programa _Doble Hoy No Circula_.
+
+```{r echo=FALSE, out.width="100%", fig.align='center', fig.cap="Contaminantes por hora (2016-2024)"}
+# Descriptivos desde python a png
+knitr::include_graphics("All_together.jpg")
+```
+
+Los contaminantes $PM_{10}$ y $PM_{2.5}$ muestran picos marcados durante las horas de mayor tránsito. Además, se logra apreciar cierta reducción en años recientes (2023–2024). Esto último, podría reflejar el efecto de la política  _Doble Hoy No Circula_. Por su parte, el ozono ($O_3$) tiene un único pico vespertino (14:00–16:00) y se aprecia menor variabilidad entre los diferentes años analizados. En conclusión, se identifican patrones consistentes en los tres contaminantes, los cuales están alineados con el comportamiento de tránsito en el Valle de México.
+
+# Diseño empírico
+
+## Estrategia de Identificación Causal
+
+Este estudio busca estimar el efecto causal del programa Doble Hoy No Circula (DHNC) sobre la concentración de partículas contaminantes en el aire. Para identificar causalidad, se emplean dos estrategias de identificación complementarias que aprovechan la naturaleza específica de la política y su implementación temporal: la primera estrategia se basa en *selection on observables*, donde se comparan los niveles de contaminación en las 24 horas posteriores a la activación del DHNC con períodos en los que el programa no está activo. Esta aproximación asume que, condicionado sobre un conjunto comprehensivo de variables de control observables, la activación del programa es cuasi-aleatoria respecto a otros factores que podrían afectar la calidad del aire. Los controles incluyen condiciones meteorológicas (temperatura, humedad y viento), efectos fijos temporales (mes, día, hora) y interacciones con fines de semana, lo que permite aislar el efecto del programa de patrones estacionales, semanales y diarios en la contaminación. La segunda estrategia emplea regresión discontinua, aprovechando que la activación del DHNC genera una discontinuidad temporal exógena. Al implementar un lag de 6 horas y utilizar una ventana (bandwidth) de 24 horas alrededor del momento de activación, esta especificación permite identificar el efecto causal inmediato del programa mediante la comparación de observaciones muy próximas temporalmente al momento de implementación, donde otros factores (*confounders*) son presumiblemente similares.
+
+Los resultados de este análisis permitirán establecer si existe una relación causal entre la implementación del DHNC y la reducción de partículas contaminantes, así como determinar la magnitud y significancia estadística de dicho efecto. Específicamente, el análisis empírico permitirá: (1) establecer existencia y dirección del efecto causal: Los coeficientes estimados para la variable DHNC indicarán si el programa genera una reducción significativa en las concentraciones de contaminantes y cuál es la magnitud de esta reducción en términos de unidades de concentración; (2) evaluar robustez temporal: La comparación entre modelos con promedios móviles de 24 horas versus promedios diarios permitirá evaluar si los efectos del programa son inmediatos o si se mantienen en el tiempo, proporcionando evidencia sobre la persistencia del impacto de la política.
+
+## Modelos Estadísticos
+
+**Modelo OLS con Promedios Móviles de 24 Horas**
+$$ C_{it}^{24h} =  \alpha + \beta \cdot DHNC_{it} + \gamma' X_{it} + \delta_m + \lambda_d + \theta_h + \phi \cdot Weekend_{it} + \epsilon_{it} $$
+Donde:
+
+* $C_{it}^{24h}$: Concentración promedio móvil de 24 horas del contaminante en el momento $i$ del día $t$
+
+* $DHNC_{it}$: Variable dummy que toma valor 1 si las siguientes 24 horas corresponden al período posterior a la activación del programa
+
+* $X_{it}$: Vector de variables meteorológicas (temperatura, humedad, velocidad y dirección del viento)
+
+* $\delta_m, \lambda_d, \theta_h$: Efectos fijos por mes, día de la semana y hora, respectivamente
+
+* $Weekend_{it}$: Variable de interacción para fines de semana
+
+* $\epsilon_{it}$: Término de error
+
+**Modelo OLS con Promedios Diarios**
+
+$$ C_t^{daily} = \alpha + \beta \cdot DHNC_{t} + \delta_m + \lambda_d + \phi \cdot Weekend_{t} + u_{t} $$
+
+Donde las variables mantienen definiciones análogas pero agregadas a nivel diario.
+
+**Modelo de Regresión Discontinua**
+$$C_{it}^{24h} = \alpha + \beta\cdot DHNC_{it} + f(t - t_0) + \gamma' X_{it} + \delta_m + \lambda_d + \theta_h + \phi \cdot Weekend_{it} + v_{it}$$ 
+Donde:
+
+$t_0$: Momento de activación del DHNC (con lag de 6 horas)
+$f(t - t_0)$: Función polinómica del tiempo corrido (running variable)
+La estimación se restringe a observaciones dentro de una ventana de 24 horas alrededor de $t_0$
+
+## Pruebas de Hipótesis y Especificaciones
+
+Se busca comprobar que el coeficiente de DHNC sea negativo, mostrando que la contaminación disminuye por efecto del programa, especialmente controlando por los factores meteorológicos y factores temporales. Esta prueba se realiza sobre el conjunto completo de datos horarios, con especificaciones separadas para cada tipo de contaminante. Para el modelo de regresión discontinua se utiliza una ventana de 24 horas alrededor de cada activación del programa. Para ello, es importante resaltar que se implementarán pruebas de sensibilidad variando el ancho de banda en la regresión discontinua y evaluando la estabilidad de los coeficientes. Adicionalmente, se realizarán pruebas desplazando artificialmente los momentos de "activación" del programa para verificar efectos retrasados al programa.
+
+# Resultados
+
+```{r reg sin controles, include=FALSE}
+
+data <- read.csv("promedios_horas_moving_avg_24h.csv")
+data <- data %>% 
+  mutate(
+    date = as.POSIXct(date, format = "%d/%m/%Y %H:%M")
+  )
+summary(data)
+
+data <- data %>% 
+  mutate(
+    # Month of year (1-12)
+    month = month(date),
+    
+    # Day of week (1=Sunday, 7=Saturday)
+    day_of_week = wday(date),
+    
+    # Hour of day (0-23)
+    hour_of_day = hour(date),
+    
+    # Weekend indicator (Saturday=7, Sunday=1)
+    is_weekend = ifelse(day_of_week %in% c(1, 7), 1, 0),
+    
+    # Interaction: weekend * hour
+    weekend_hour_interaction = is_weekend * hour_of_day
+  )
+################################################################################
+####################### OLS - sin controles
+# CO
+reg_CO <- lm(CO ~ activacion_doble_no_circula, data = data)
+# NO
+reg_NO <- lm(NO ~ activacion_doble_no_circula, data = data)
+# O3
+reg_O3 <- lm(O3 ~ activacion_doble_no_circula, data = data)
+#PM10
+reg_PM10 <- lm(PM10 ~ activacion_doble_no_circula, data = data)
+#PM2.5
+reg_PM2.5 <- lm(PM2.5 ~ activacion_doble_no_circula, data = data)
+# SO2
+reg_SO2 <- lm(SO2 ~ activacion_doble_no_circula, data = data)
+####################### OLS - controles #######################
+reg_CO_cont <- lm(CO ~ activacion_doble_no_circula +
+                    RH + TMP + WDR + WSP + 
+                    as.factor(month) + as.factor(day_of_week) + 
+                    as.factor(hour_of_day)*is_weekend, data = data)
+# NO
+reg_NO_cont <- lm(NO ~ activacion_doble_no_circula +
+                    RH + TMP + WDR + WSP + 
+                    as.factor(month) + as.factor(day_of_week) + 
+                    as.factor(hour_of_day)*is_weekend, data = data)
+# O3
+reg_O3_cont <- lm(O3 ~ activacion_doble_no_circula +
+                    RH + TMP + WDR + WSP + 
+                    as.factor(month) + as.factor(day_of_week) + 
+                    as.factor(hour_of_day)*is_weekend, data = data)
+#PM10
+reg_PM10_cont <- lm(PM10 ~ activacion_doble_no_circula +
+                      RH + TMP + WDR + WSP + 
+                      as.factor(month) + as.factor(day_of_week) + 
+                      as.factor(hour_of_day)*is_weekend, data = data)
+#PM2.5
+reg_PM25_cont <- lm(PM2.5 ~ activacion_doble_no_circula +
+                       RH + TMP + WDR + WSP + 
+                       as.factor(month) + as.factor(day_of_week) + 
+                       as.factor(hour_of_day)*is_weekend, data = data)
+# SO2
+reg_SO2_cont <- lm(SO2 ~ activacion_doble_no_circula +
+                     RH + TMP + WDR + WSP + 
+                     as.factor(month) + as.factor(day_of_week) + 
+                     as.factor(hour_of_day)*is_weekend, data = data)
+```
+
+
+
+```{r tabla1, echo=FALSE, results='asis'}
+
+################################################################################
+####################### GENERACION DE TABLAS
+
+stargazer::stargazer(reg_CO, reg_NO, reg_O3, reg_PM10, reg_PM2.5, reg_SO2,
+                     type = "latex",
+                     font.size = "small",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep.stat = c("n"),
+                     covariate.labels = c("DHNC", "Cte"),
+                     column.labels = c("CO", "NO", "O3", "PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios sin controles ",
+                     df = FALSE,
+                     header = FALSE)
+```
+
+```{r tabla lag6, include=FALSE}
+# lag 6 horas
+data <- data %>% 
+  mutate(
+    lag1 = lag(activacion_doble_no_circula, n = 6, default = 0)
+  )
+
+####################### OLS - controles
+# O3
+lag_O3_cont <- lm(O3 ~ lag1 +
+                    RH + TMP + WDR + WSP + 
+                    as.factor(month) + as.factor(day_of_week) + 
+                    as.factor(hour_of_day)*is_weekend, data = data)
+#PM10
+lag_PM10_cont <- lm(PM10 ~ lag1 +
+                      RH + TMP + WDR + WSP + 
+                      as.factor(month) + as.factor(day_of_week) + 
+                      as.factor(hour_of_day)*is_weekend, data = data)
+#PM2.5
+lag_PM2.5_cont <- lm(PM2.5 ~ lag1 +
+                       RH + TMP + WDR + WSP + 
+                       as.factor(month) + as.factor(day_of_week) + 
+                       as.factor(hour_of_day)*is_weekend, data = data)
+```
+
+```{r tabla moviles 6h, results='asis'}
+stargazer::stargazer(lag_O3_cont, lag_PM10_cont, lag_PM2.5_cont,
+                     type = "latex",
+                     font.size = "small",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep = c("lag", "Cons"),
+                     keep.stat = c("n"),
+                     covariate.labels = c("DHNC",  "Cte"),
+                     column.labels = c("O3 lag", "PM10 lag", "PM2.5 lag"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios moviles (+6 h) con controles",
+                     df = FALSE,
+                     header = FALSE)
+```
+
+```{r tabla2, results='asis', include=FALSE}
+stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
+                     type = "latex",
+                     font.size = "small",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep = c("circula",  "Cons"),
+                     covariate.labels = c("DHNC",  "Cte"),
+                     column.labels = c("CO", "NO", "O3"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios con controles (1)",
+                     df = FALSE,
+                     header = FALSE)
+```
+
+```{r tabla3, results="asis", include=FALSE}
+stargazer::stargazer(reg_PM10_cont, reg_PM25_cont, reg_SO2_cont,
+                     type = "latex",
+                     font.size = "small",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep = c("circula", "Cons"),
+                     covariate.labels = c("DHNC",  "Cte"),
+                     column.labels = c("PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios con controles (2)",
+                     df = FALSE,
+                     header = FALSE)
+```
+
+```{r tabla_1, echo=FALSE , warning=FALSE}
+# Tabla 1: O3
+tibble::tibble(
+  Specification = c("Without Controls", "With Time + Weather Controls"),
+  Coefficient = c(4.71, 2.02),
+  SE = c(0.30, 0.18),
+  `P-value` = c("<0.05", "<0.05"),
+  `CI Lower` = c(4.13, 1.66),
+  `CI Upper` = c(5.30, 2.38)
+) %>%
+  kable(caption = "Comparación de resultados RD (O3)", booktabs = TRUE, digits = 2) %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down"),
+                full_width = FALSE)
+```
+
+
+```{r tabla_2, echo=FALSE, warning=FALSE}
+# Tabla 2: PM2.5
+tibble::tibble(
+  Specification = c("Without Controls", "With Time + Weather Controls"),
+  Coefficient = c(4.15, 3.22),
+  SE = c(0.30, 0.24),
+  `P-value` = c("<0.05", "<0.05"),
+  `CI Lower` = c(3.57, 2.75),
+  `CI Upper` = c(4.72, 3.69)
+) %>%
+  kable(caption = "Comparación de resultados RD (PM2.5)", booktabs = TRUE, digits = 2) %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down"),
+                full_width = FALSE)
+```
+
+
+```{r tabla_3, echo=FALSE, warning=FALSE}
+# Tabla 3: PM10
+tibble::tibble(
+  Specification = c("Without Controls", "With Time + Weather Controls"),
+  Coefficient = c(5.58, 5.06),
+  SE = c(0.46, 0.31),
+  `P-value` = c("<0.05", "<0.05"),
+  `CI Lower` = c(4.68, 4.45),
+  `CI Upper` = c(6.49, 5.67)
+) %>%
+  kable(caption = "Comparación de resultados RD (PM10)", booktabs = TRUE, digits = 2) %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down"),
+                full_width = FALSE)
+```
+
+Los primero resultados obtenidos surgen de las regresiones simples (OLS) efectuadas con y sin controles para responder la relación de la activación del _Doble Hoy No Circula_ con los promedios diarios de contaminantes. En ello, se encontró que la activación del programa está relacionada con un aumento de 15.75, 20.45 y 13.17 $\mu g/m^3$ sobre los niveles de contaminantes principales ($O_3$, $PM_{10}$, $PM_{2.5}$). Sin embargo, al realizar un recorrido del tratamiento en 6 horas, notamos que el efecto se reduce a 6.53, 11.77 y 8.96 $\mu g/m^3$, como se muestra en las Tablas 1 y 2. 
+
+Análogamente, los coeficientes para los 3 análisis de regresión discontinua son positivos y significativos, en concordancia con lo mostrado por las regresiones simples inciales. Esto es interesante porque, por sí solos, esto significaría que el programa de doble no circula aumenta el nivel de las partículas de contaminantes presentes en el aire. Sin embargo, tiene sentido dado que el doble hoy no circula se activa cuando hay niveles altos de contaminantes en el aire. Además, la regularización de los niveles es gradual y no inmediata. Ahora bien, de las Tablas 5 y 6 podemos observar que los efectos entre los análisis con controles y sin controles no varían demasiado lo que nos garantiza robustez. Por otro lado, de la Tabla 4 podemos observar que el efecto con controles es la mitad que el efecto sin controles, lo que no nos preocupa dado que el ozono es un contaminante más relacionado con el clima que el resto.
+
+Finalmente, como se puede observar en las Figuras 2 a 7 de los anexos, no hay mucha diferencia entre utilizar un lag de 6 horas o no. Sin embargo, lo interesante es observar el cambio de pendiente antes y después del tratamiento en las gráficas agrupadas. Esto muestra que el efecto del tratamiento dentro de la ventana de las 24 horas es tal que los valores de los contaminantes en el aire sí se reducen. Además, en las gráficas sin agrupar, podemos observar que después de la discontinuidad del tratamiento, gradualmente se recuperan los valores de partículas que había antes de que se activara el programa. 
+
+# Conclusión 
+
+Inicialmente se realizaron las regresiones simples $Y = \alpha + \beta \cdot DHNC + \epsilon$ donde Y representa a los distintos facotres contaminantes en los datos; sin embargo, los coeficientes obtenidos eran muy elevados en promedios diarios. Lo que, como se mencionó anteriormente, se podría interpretar como una justificación a la implementación del programa en el día elegido, pero no aportaba información sobre el efecto del tratamiento en los niveles de contaminación. Por ello, se realizó un retraso en la consideración del tratamiento, agregando 6 horas para medir un efecto correspondiente temporalmente, con ello las estimaciones mejoraron notariamente aunque no generaron un cambio de dirección del efecto.
+
+Así, los resultados obtenidos en este estudio revelan un panorama complejo y paradójico respecto a los efectos del programa _Doble Hoy No Circula_ (DHNC) sobre la calidad del aire en la Ciudad de México. Contrario a los objetivos declarados de la política, nuestros hallazgos sugieren que la implementación del DHNC está asociada con un incremento significativo en las concentraciones de los principales contaminantes atmosféricos analizados. Salvo por la aportación de una ligera y rezagada reducción en los contaminantes a sus niveles usuales, el programa no parece mostrar un cambio negativo en contaminación. Si bien los resultados entre los modelos ofrece variabilidad de magnitudes, la consistencia entre ambas estrategias de identificación fortalece la robustez de estos resultados y sugiere que el efecto adverso del programa es robusto a diferentes especificaciones econométricas.
+
+Estos hallazgos contradicen directamente la hipótesis inicial de que el DHNC mejoraría la calidad del aire mediante la reducción forzada del tráfico vehicular. Sin embargo, son notablemente consistentes con los resultados del estudio seminal de Davis (2008) sobre el programa original _Hoy No Circula_, quien encontró evidencia limitada de mejoras ambientales y sugirió la presencia de respuestas en el consumo de la población que minaban los objetivos de la política. La literatura económica sobre restricciones vehiculares ha documentado ampliamente el fenómeno de "respuestas de evasión" por parte de los ciudadanos, incluyendo la adquisición de vehículos adicionales, cambios en patrones de viaje temporal, y sustitución hacia modos de transporte potencialmente más contaminantes. 
+
+## Implicaciones de Política Pública
+
+Los resultados de este estudio tienen implicaciones profundas para el diseño de políticas ambientales urbanas en México y otros países en desarrollo. La evidencia sugiere que las restricciones vehiculares, especialmente cuando se implementan sin considerar las respuestas de los ciudadanos o sin alternativas adecuadas de transporte público, pueden resultar contraproducentes. Estos hallazgos cuestionan fundamentalmente la efectividad de las políticas de control en el sector ambiental y sugieren la necesidad de aproximaciones más sofisticadas que consideren los incentivos económicos y las respuestas de equilibrio general. Políticas alternativas como impuestos a las emisiones o inversiones en transporte público de calidad podrían generar resultados ambientales superiores sin los efectos perversos observados en el DHNC.
+
+## Limitaciones y Trabajo Futuro
+
+Aunque nuestros resultados son robustos estadísticamente, reconocemos varias limitaciones importantes que abren avenidas para investigación futura. Primero, nuestro análisis se enfoca exclusivamente en los efectos sobre la calidad del aire, sin examinar directamente los mecanismos que podrían explicar el incremento observado en contaminantes. Estudios futuros deberían incorporar datos sobre ventas de vehículos, patrones de tráfico, y uso de transporte público para identificar con mayor precisión estos canales. Segundo, aunque se realizaron múltiples pruebas en los modelos, a razón de tiempo no se pudieron explorar todas las variantes posibles; investigaciones futuras podrían beneficiarse de análisis de robustez más extensivos. Tercero, el análisis podría enriquecerse incorporando heterogeneidad espacial más detallada, analizando si los efectos del programa varían según características socioeconómicas de diferentes distritos de la Ciudad de México. Esto permitiría identificar si ciertos segmentos de la población son más propensos a respuestas de evasión y diseñar políticas más focalizadas. Finalmente, una evaluación comprehensiva del programa DHNC requeriría analizar no solo sus efectos ambientales sino también sus costos económicos y sociales, incluyendo impactos sobre bienestar de los hogares, productividad económica, y equidad distributiva. Solo mediante un análisis costo-beneficio integral se podrá determinar si los objetivos ambientales justifican los costos observados.
+
+\newpage
+# Bibiliografía
+
+* Davis, L. W. (2008). The Effect of Driving Restrictions on Air Quality in Mexico City. Journal Of Political Economy, 116(1), 38-81. https://doi.org/10.1086/529398 
+
+* Dirección de Monitoreo Atmosférico. (2017a). Contaminantes [Conjunto de datos; Portal digital]. En Datos. SEDEMA-Aire CDMX. https://www.aire.cdmx.gob.mx/default.php?opc=%27aKBhnmI=%27&opcion=Zg== 
+
+* Dirección de Monitoreo Atmosférico. (2017b). Meteorología [Conjunto de datos; Portal digital]. En Datos. SEDEMA-Aire CDMX. https://www.aire.cdmx.gob.mx/default.php?opc=%27aKBhnmI=%27&opcion=Zw== 
+
+* Gobierno de la Ciudad de México. (2019). Aviso por el que se da a conocer el Programa para prevenir y responder a contingencias ambientales atmosféricas en la Ciudad de México. En Gaceta Oficial de la Ciudad de México. Órgano de Difusión del Gobierno de la Ciudad de México. https://data.consejeria.cdmx.gob.mx/portal_old/uploads/gacetas/25a1ef7295458ade0faad3daebb31f05.pdf 
+
+* Secretaria de Gobernación. (1989). ACUERDO por el que se establecen los criterios para limitar la circulación de los vehículos automotores en el Distrito Federal un día a la semana. En Diario Oficial de la Federación. Recuperado 16 de abril de 2025, de https://dof.gob.mx/nota_detalle.php?codigo=4834099&fecha=08/11/1989#gsc.tab=0 
+
+* Secretaría del Medio Ambiente. (2024). Activación de las contingencias Ambientales atmosféricas en ZMVM. En Portal de Transparencia (No. 090163724001805). Gobierno de la Ciudad de México.
+
+
+\newpage
+# Anexo
+
+```{r data dias, include=FALSE}
+data <- read.csv("contaminantes_meteorologia.csv")
+data <- data %>% 
+  mutate(
+    date = as.Date.character(date, format = "%d/%m/%Y")
+  )
+summary(data)
+################################################################################
+# CO
+reg_CO_cont <- lm(CO_mean ~ activacion_doble_no_circula +
+               RH_mean + TMP_mean + WDR_mean + WSP_mean +
+                 as.factor(month(date)) + as.factor(day(date)), data = data)
+# NO
+reg_NO_cont <- lm(NO_mean ~ activacion_doble_no_circula +
+               RH_mean + TMP_mean + WDR_mean + WSP_mean +
+                 as.factor(month(date)) + as.factor(day(date)), data = data)
+# O3
+reg_O3_cont <- lm(O3_mean ~ activacion_doble_no_circula +
+               RH_mean + TMP_mean + WDR_mean + WSP_mean +
+                 as.factor(month(date)) + as.factor(day(date)), data = data)
+#PM10
+reg_PM10_cont <- lm(PM10_mean ~ activacion_doble_no_circula +
+               RH_mean + TMP_mean + WDR_mean + WSP_mean +
+                 as.factor(month(date)) + as.factor(day(date)), data = data)
+#PM2.5
+reg_PM2.5_cont <- lm(PM2.5_mean ~ activacion_doble_no_circula +
+               RH_mean + TMP_mean + WDR_mean + WSP_mean +
+                 as.factor(month(date)) + as.factor(day(date)), data = data)
+# SO2
+reg_SO2_cont <- lm(SO2_mean ~ activacion_doble_no_circula +
+               RH_mean + TMP_mean + WDR_mean + WSP_mean +
+                 as.factor(month(date)) + as.factor(day(date)), data = data)
+
+```
+
+```{r tabla dia 1, results='asis'}
+stargazer::stargazer(reg_CO_cont, reg_NO_cont, reg_O3_cont,
+                     type = "latex",
+                     font.size = "small",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep = c("circula",  "Cons"),
+                     covariate.labels = c("DHNC",  "Cte"),
+                     column.labels = c("CO", "NO", "O3"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios con controles (1)",
+                     header = FALSE)
+```
+
+```{r tabla dia 2, results='asis'}
+stargazer::stargazer(reg_PM10_cont, reg_PM2.5_cont, reg_SO2_cont,
+                     type = "latex",
+                     font.size = "small",
+                     star.cutoffs = c(0.1, 0.05, 0.01),
+                     column.sep.width = "1pt",
+                     omit.stat = "ser",
+                     keep = c("circula",  "Cons"),
+                     covariate.labels = c("DHNC",  "Cte"),
+                     column.labels = c("PM10", "PM2.5", "SO2"),
+                     dep.var.caption = "Contaminantes",
+                     dep.var.labels.include = FALSE,
+                     title = "Resultados promedios diarios con controles (2)",
+                     header = FALSE)
+```
+
+```{r echo=FALSE, out.width="12cm", out.height="7cm", fig.align='center', fig.cap="Comparación contaminante O3 (Sin shift) "}
+# Imagen de la tabla de resultados:
+knitr::include_graphics("Plots/Plots/O3_No Shift.png")
+```
+
+```{r echo=FALSE, out.width="12cm", out.height="7cm", fig.align='center', fig.cap="Comparación contaminante O3 (Con shift) "}
+# Imagen de tabla de resultados:
+knitr::include_graphics("Plots/Plots/O3_6hr Shift.png")
+```
+
+```{r echo=FALSE, out.width="12cm", out.height="7cm", fig.align='center', fig.cap="Comparación contaminante PM2.5 (Sin shift) "}
+# Imagen de tabla de resultados:
+knitr::include_graphics("Plots/Plots/PM2.5_No Shift.png")
+```
+
+```{r echo=FALSE, out.width="12cm", out.height="7cm", fig.align='center', fig.cap="Comparación contaminante PM2.5 (Con shift) "}
+# Imagen de tabla de resultados:
+knitr::include_graphics("Plots/Plots/PM2.5_6hr Shift.png")
+```
+
+```{r echo=FALSE, out.width="12cm", out.height="7cm", fig.align='center', fig.cap="Comparación contaminante PM10 (Con shift) "}
+# Imagen de tabla de resultados:
+knitr::include_graphics("Plots/Plots/PM10_6hr Shift.png")
+```
+
+```{r echo=FALSE, out.width="12cm", out.height="7cm", fig.align='center', fig.cap="Comparación contaminante PM10 (Sin shift) "}
+# Imagen de tabla de resultados:
+knitr::include_graphics("Plots/Plots/PM10_No Shift.png")
+```
+
